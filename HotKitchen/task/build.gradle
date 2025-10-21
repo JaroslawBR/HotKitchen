@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'kotlin'
+apply plugin: 'kotlinx-serialization'
+
+application {
+    mainClass = "io.ktor.server.netty.EngineMain"
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets.main.resources.srcDirs = ["src/resources"]
+
+dependencies {
+        def ktor_version = "3.3.0"
+        def jetbrains_exposed = "0.61.0"
+
+    implementation("io.ktor:ktor-server-html-builder-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
+
+    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation('ch.qos.logback:logback-classic:1.5.13')
+    implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
+    implementation("io.ktor:ktor-server-di:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("org.jetbrains.exposed:exposed-core:$jetbrains_exposed")
+    implementation("org.jetbrains.exposed:exposed-dao:$jetbrains_exposed")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$jetbrains_exposed")
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("org.postgresql:postgresql:42.7.8")
+
+}

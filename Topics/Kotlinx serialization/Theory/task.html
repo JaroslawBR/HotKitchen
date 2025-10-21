@@ -1,0 +1,148 @@
+<div class="step-text">
+<p><strong>Serialization</strong> (encoding) is the process of converting data into a specific format, like XML, JSON, Protobuf, etc., so it can be transferred to different systems. The opposite process of converting the serialized data into the original format is called <strong>deserialization</strong> (decoding). There are many popular libraries for serializing and deserializing data in Java and Kotlin – Jackson, Gson, Fastjson, and Moshi. However, in this topic we will examine a pure-Kotlin library – the <a href="https://github.com/Kotlin/kotlinx.serialization" rel="noopener noreferrer nofollow" target="_blank">kotlinx.serialization</a> library (Kotlin serialization). <strong>Kotlinx</strong> is a collection of useful libraries which do not belong to the <a class="theory-lookup not-relevant" href="/learn/step/19887" target="_blank" title="In Kotlin, a standard library is a fundamental part of the Kotlin programming language that is included with the language and provides essential functionality for working with the language. | It offers a robust set of tools to handle various programming tasks efficiently, and it is designed to work seamlessly with Kotlin's language features. The standard library includes functions, classes, and methods that provide pre-built functionality, which can be invoked or used in your code, saving you the time and effort of writing these functionalities from scratch. Examples of functionalities provided by the Kotlin standard library include handling complex math calculations like the sine and cosine of an angle. Standard libraries can be categorized into those that are included with the language and provide essential functionality, and third-party libraries that offer specialized or advanced features.">standard library</a>. The kotlinx.serialization library supports such serialization formats as JSON, HOCON, Protobuf, CBOR, and Properties. In this topic, we will deal with the popular JSON format.</p>
+<h5 id="include-the-library-in-a-project">Include the library in a project</h5>
+<p>In order to use the library with the JSON format, you need to edit the <code class="language-kotlin">build.gradle</code> file of your project. In the <code class="language-kotlin">plugins</code>, <code class="language-kotlin">repositories</code>, and <code class="language-kotlin">dependencies</code> sections, add the following lines:</p>
+<pre><code class="language-no-highlight">plugins {
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+}</code></pre>
+<p>With the above lines, the Kotlin serialization plugin is loaded for Kotlin version 1.8.10, the Maven central repository is added, and the kotlinx JSON serialization dependency is included (version 1.3.2). The library is available in the Maven central repository, where you can find the <a href="https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json-jvm" rel="noopener noreferrer nofollow" target="_blank">latest version</a>.</p>
+<p>The library should be imported into the files of your project with the following lines:</p>
+<pre><code class="language-kotlin">import kotlinx.serialization.*
+import kotlinx.serialization.json.*</code></pre>
+<p>Note that Kotlin compiler 1.4.0 or higher is required.</p>
+<h5 id="json-encoding">JSON encoding</h5>
+<p>With Kotlin serialization, any class that we want to serialize should be explicitly marked with the <code class="language-kotlin">@Serializable</code> annotation, which instructs the Kotlin serialization plugin to generate a serializer (code for encoding and decoding it) for it. The <code class="language-kotlin">@Serializable</code> annotation has to be put right before the class declaration.</p>
+<p>Following is a simple example of serializing a class instance that has various types of properties. The <code class="language-kotlin">Test</code> class is annotated with the <code class="language-kotlin">@Serializable</code> annotation, while serialization is performed with the <code class="language-kotlin">Json.encodeToString()</code> function.</p>
+<pre><code class="language-kotlin">import kotlinx.serialization.*
+import kotlinx.serialization.json.*
+
+@Serializable
+class Test(val name: String, val integerNumber: Int, val realNumber: Double, val listString: List&lt;String&gt;, val setInteger: Set&lt;Int&gt;)
+
+fun main() {
+    val listStr = listOf("One", "Two", "Three")
+    val setNum = setOf(1, 0, 2, 9)
+    val instance = Test("test", 42, 15.55,listStr, setNum)
+
+    val serialized = Json.encodeToString(instance)
+    println(serialized)
+}
+
+// {"name":"test","integerNumber":42,"realNumber":15.55,"listString":["One","Two","Three"],"setInteger":[1,0,2,9]}</code></pre>
+<h5 id="pretty-printing">Pretty printing</h5>
+<p>Normally, a JSON string is to be transmitted to another system, so it should be as short as possible. This is achieved by keeping it in a single line, without any unnecessary spaces. However, in some cases a JSON string should be human-readable, which can be accomplished by using the <code class="language-kotlin">prettyPrint</code> property of the <code class="language-kotlin">Json</code> object.</p>
+<p>Let's change the following line of the previous code:</p>
+<pre><code class="language-kotlin">val serialized = Json.encodeToString(instance)</code></pre>
+<p>We will replace it with the following:</p>
+<pre><code class="language-kotlin">val jsonPrettyPrint = Json { prettyPrint = true }
+
+val serialized = jsonPrettyPrint.encodeToString(instance)</code></pre>
+<p>Now the program output is:</p>
+<pre><code class="language-no-highlight">{
+    "name": "test",
+    "integerNumber": 42,
+    "realNumber": 15.55,
+    "listString": [
+        "One",
+        "Two",
+        "Three"
+    ],
+    "setInteger": [
+        1,
+        0,
+        2,
+        9
+    ]
+}</code></pre>
+<h5 id="encoding-defaults">Encoding defaults</h5>
+<p>In many cases, a class constructor has properties with <a class="theory-lookup not-relevant" href="/learn/step/19887" target="_blank" title="In Kotlin, a default value is a preassigned value for a function parameter, which means that you can invoke the function without explicitly providing a value for that parameter, and the default value will be used instead. | This capability allows for more concise function calls when not all arguments need to be specified. Default values are noted in the function declaration using the `=` operator after the type, and can be overridden by providing a named argument when invoking the function.">default values</a>. If a class instance is initiated with the default value, then this property <strong>isn't serialized by default</strong>. Check out the following example:</p>
+<pre><code class="language-kotlin">@Serializable
+class Player(val name: String, var leveL: Int = 1)
+
+val jsonPrettyPrint = Json { prettyPrint = true }
+
+val player1 = Player("Best player", 5)
+println(jsonPrettyPrint.encodeToString(player1))
+/* Prints:
+{
+    "name": "Best player",
+    "leveL": 5
+}
+*/
+
+val player2 = Player("John Doe")
+println(jsonPrettyPrint.encodeToString(player2))
+/* Prints:
+{
+    "name": "John Doe"
+}
+*/</code></pre>
+<p>If we want to change that behavior and encode the defaults, then the class property with the default value should be marked with the <code class="language-kotlin">@EncodeDefault</code> annotation as in the following example:</p>
+<pre><code class="language-kotlin">@Serializable
+class Player(val name: String, @EncodeDefault var leveL: Int = 1)
+
+val jsonPrettyPrint = Json { prettyPrint = true }
+
+val player2 = Player("John Doe")
+println(jsonPrettyPrint.encodeToString(player2))
+/* Prints:
+{
+    "name": "John Doe",
+    "leveL": 1
+}
+*/</code></pre>
+<h5 id="json-decoding">JSON decoding</h5>
+<p>JSON deserialization is performed with the use of the <code class="language-kotlin">Json.decodeFromString&lt;SerializableClass&gt;(jsonString: String)</code> function, where <code class="language-kotlin">SerializableClass</code> is a serializable class and <code class="language-kotlin">jsonString</code> a JSON string. Following is an example of creating a <code class="language-kotlin">Test</code> class <a class="theory-lookup not-relevant" href="/learn/step/19887" target="_blank" title="In Kotlin, an instance refers to an object or an instance of a class that is created during runtime. | It is a subtype of every known type in Kotlin, meaning it can represent a value of any type in terms of type checking. This is particularly useful in situations where a function demands a return type, but it is impossible to return a value, such as when calculating a percentage if the value is zero. In such cases, a function that returns `Instance` can be used. The concept of instance is also related to threading, where only one thread can execute code in a synchronized method of a particular instance. This means that different threads can execute methods of different objects at the same time, a concept that can be summarized as one thread per instance.">instance</a> by decoding a JSON string:</p>
+<pre><code class="language-kotlin">@Serializable
+data class Test(val name: String, val integerNumber: Int, val realNumber: Double, val listString: List&lt;String&gt;, val setInteger: Set&lt;Int&gt;)
+
+val jsonString = """
+    {
+        "name": "myName",
+        "integerNumber": 10,
+        "realNumber": 12.0,
+        "listString": [
+            "First String",
+            "Second String"
+        ],
+        "setInteger": [
+            1000,
+            2000
+        ]
+    }
+""".trimIndent()
+
+val testInstant = Json.decodeFromString&lt;Test&gt;(jsonString)
+
+println(testInstant)
+
+// Test(name=myName, integerNumber=10, realNumber=12.0, listString=[First String, Second String], setInteger=[1000, 2000])</code></pre>
+<p>In the above example, the <code class="language-kotlin">Test</code> class is marked as a data class. This is not a requirement for the deserialization process, but it is in order to easily print the <code class="language-kotlin">Test</code> instant properties.</p>
+<h5 id="basic-types-and-collections">Basic types and collections</h5>
+<p>Kotlin serialization directly supports such Kotlin <a class="theory-lookup not-relevant" href="/learn/step/19887" target="_blank" title="In Kotlin, a basic type is a fundamental building block for data manipulation within the language. | They can be separated into several groups according to their meaning, and the types from the same group operate similarly but have different sizes and thus represent different ranges of value. Kotlin provides several types for integer and fractional numbers. Integer numbers (e.g. int, long, short, byte) are represented by the following four types, from the largest to the smallest. These types have different sizes and may represent different ranges of value. The integer type range can be calculated as a - (2^(n-1)) to (2^(n-1)-1), where n is the number of bits in the type. Basic types are relative terms, so a given type doesn't have to be one or the other. In this case, a subtype of the type, such as Exception and Error, deals with exceptional events inside an application.">basic types</a> as <code class="language-kotlin">Boolean</code>, <code class="language-kotlin">Byte</code>, <code class="language-kotlin">Short</code>, <code class="language-kotlin">Int</code>, <code class="language-kotlin">Long</code>, <code class="language-kotlin">Float</code>, <code class="language-kotlin">Double</code>, <code class="language-kotlin">Char</code>, and <code class="language-kotlin">String</code>. In addition, the <code class="language-kotlin">Enum</code>, <code class="language-kotlin">Pair</code>, and <code class="language-kotlin">Triple</code> classes are also directly supported without the need to use the <code class="language-kotlin">@Serializable</code> annotation.</p>
+<p>Kotlin <code class="language-kotlin">List</code> and <code class="language-kotlin">Set</code> types are serializable if their elements are serializable, while Kotlin <code class="language-kotlin">Map</code> is serializable if its keys and values are serializable. For example:</p>
+<pre><code class="language-kotlin">@Serializable
+data class Person(val name: String)
+
+val persons = listOf(Person("Joe Hill"), Person("Elen Doe"))
+println(persons)
+// [Person(name=Joe Hill), Person(name=Elen Doe)]
+
+val jsonStr = Json.encodeToString(persons)
+println(jsonStr)
+// [{"name":"Joe Hill"},{"name":"Elen Doe"}]
+
+val newPersons = Json.decodeFromString&lt;List&lt;Person&gt;&gt;(jsonStr)
+println(newPersons)
+// [Person(name=Joe Hill), Person(name=Elen Doe)]</code></pre>
+<h5 id="conclusion">Conclusion</h5>
+<p>Serialization plays a very important role in various programs, and kotlinx.serialization provides a fast and easy to use library for that purpose. In this topic, we've discussed only the basic features of the library; however, there is much more to it, which makes the library really helpful even in complex cases.</p>
+</div>

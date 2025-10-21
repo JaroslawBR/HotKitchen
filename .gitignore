@@ -1,0 +1,17 @@
+# course config files
+*.yaml
+
+# gradle
+.gradle/
+build
+
+
+# idea config
+.idea
+
+# old stages
+/HotKitchen/*
+!/HotKitchen/task/
+/HotKitchen/task/*
+!/HotKitchen/task/src
+!/HotKitchen/task/build.gradle

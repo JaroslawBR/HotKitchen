@@ -1,0 +1,32 @@
+<div class="step-text">
+<p></p>
+<p>What is the output of the following code?</p>
+<pre><code class="language-kotlin">@Serializable
+class City(val name: String, val population: Int, val areaKm2: Double = 0.0)
+
+val barcelona = City("Barcelona", 1700000, 101.4)
+
+val json = Json { prettyPrint = false }
+
+val jsonBarcelona = json.encodeToString(barcelona)
+println(jsonBarcelona)</code></pre>
+<p> </p>
+<p>a)</p>
+<pre><code class="language-no-highlight">{
+    "name": "Barcelona",
+    "population": 1700000
+}</code></pre>
+<p> </p>
+<p>b)</p>
+<pre><code class="language-no-highlight">{
+    "name": "Barcelona",
+    "population": 1700000,
+    "areaKm2": 101.4
+}</code></pre>
+<p> </p>
+<p>c)</p>
+<pre><code class="language-no-highlight">{"name":"Barcelona","population":1700000,"areaKm2":101.4}</code></pre>
+<p> </p>
+<p>d)</p>
+<pre><code class="language-no-highlight">{"name":"Barcelona","population":1700000}</code></pre>
+</div>
